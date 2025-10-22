@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Twinned (Only for Luna)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <style>
+    /* page / background */
+    html,body{height:100%;margin:0}
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Playfair Display', serif;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-image: url('imgs/BG.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    /* dashboard container (visible after login) */
+    .container {
+      text-align: center;
+      width: 90%;
+      max-width: 800px;
+      padding: 50px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(5px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    }
+
+    .hero-img {
+      max-width: 180px;
+      margin-bottom: 25px;
+      border-radius: 50%;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+      font-size: 2.3rem;
+      margin-bottom: 25px;
+      color: #1a1a1a;
+      font-weight: 700;
+    }
+
+    .SS, .SD, .SW, .P {
+      background-color: #1a1a1a;
+      color: #ffffff;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin: 0 10px;
+    }
+
+    .SS:hover, .SD:hover, .SW:hover, .P:hover {
+      background: #333333;
+    }
+
+    .Music {
+      background-color: #1a1a1a;
+      color: #ffffff;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      border-radius: 50px;
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 5;
+    }
+
+    .Music:hover { background: #333333; }
+
+    .button-icon {
+      width: 60px;
+      height: 60px;
+      margin-right: 8px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    /* ---------- Login overlay ---------- */
+    #loginOverlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* changed code: use your sign-in image */
+    background-image: url("imgs/BG2.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* fallback color */
+    background-color: rgba(255,255,255,0.95);
+    z-index: 9999;
+}
+
+    .login-box {
+      width: 90%;
+      max-width: 420px;
+      padding: 36px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+
+    .login-box h2 {
+      margin: 0 0 18px 0;
+      font-size: 1.6rem;
+      color: #1a1a1a;
+    }
+
+    .login-box p { margin: 0 0 14px 0; color: #444; }
+
+    .pw-input {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.12);
+      margin-bottom: 12px;
+      box-sizing: border-box;
+    }
+
+    .login-btn {
+      background-color: #1a1a1a;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .login-btn:hover { background: #333; }
+
+    /* retry message (blinks 3 times when wrong) */
+    .retry {
+      color: #c62828;
+      font-weight: 700;
+      margin-top: 10px;
+      visibility: hidden;
+    }
+    .retry.blink {
+      visibility: visible;
+      animation: blink 0.45s step-start 0s 3;
+    }
+    @keyframes blink {
+      0% { opacity: 1 }
+      50% { opacity: 0 }
+      100% { opacity: 1 }
+    }
+
+    /* hide dashboard until user is authenticated */
+    #dashboardContent {
+      visibility: hidden;
+      pointer-events: none;
+    }
+    body.logged-in #dashboardContent {
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* small helper to keep overlay hidden once logged-in */
+    body.logged-in #loginOverlay { display: none; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <!-- Login overlay shown first unless session says logged-in -->
+  <div id="loginOverlay" aria-hidden="false">
+    <div class="login-box" role="dialog" aria-labelledby="loginTitle">
+      <h2 id="loginTitle">Lemme see if you got some memory...</h2>
+      <p>Enter password to continue</p>
+
+      <form id="loginForm" autocomplete="off">
+        <input id="passwordInput" class="pw-input" type="password" placeholder="Password" required autofocus />
+        <div>
+          <button type="submit" class="login-btn">Enter</button>
+        </div>
+      </form>
+
+      <div id="retryMsg" class="retry">Retry?</div>
+    </div>
+  </div>
+
+  <!-- Dashboard content -->
+  <div class="container" id="dashboardContent" aria-hidden="true">
+    <img src="imgs/PFP.jpeg" alt="Luna" class="hero-img">
+    <h1>Welcome Alkha! What's on your mind today?</h1>
+    <button class="SD">Skill Development</button>
+    <button class="SW" onclick="window.location.href='work.html'">Work & Projects</button>
+    <button class="SS" onclick="window.location.href='social.html'">Social Media</button>
+  </div>
+
+  <a href="https://open.spotify.com/" target="_blank">
+    <button class="Music">
+      <img src="imgs/music.png" alt="music icon" class="button-icon">
+      Music?
+    </button>
+  </a>
+
+  <script>
+    // CHANGE THIS to your desired password (case-sensitive)
+    const PASSWORD ="Alkha*2020";
+
+    const overlay = document.getElementById('loginOverlay');
+    const form = document.getElementById('loginForm');
+    const pwd = document.getElementById('passwordInput');
+    const retry = document.getElementById('retryMsg');
+
+    // If session already authenticated, hide overlay immediately
+    if (sessionStorage.getItem('twinned_logged') === '1') {
+      document.body.classList.add('logged-in');
+      overlay.style.display = 'none';
+      document.getElementById('dashboardContent').setAttribute('aria-hidden','false');
+    }
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const value = pwd.value || '';
+      if (value === PASSWORD) {
+        // success -> mark session and hide overlay
+        sessionStorage.setItem('twinned_logged', '1');
+        document.body.classList.add('logged-in');
+        overlay.style.display = 'none';
+        document.getElementById('dashboardContent').setAttribute('aria-hidden','false');
+      } else {
+        // wrong -> flash Retry? three times
+        pwd.value = '';
+        // retrigger animation
+        retry.classList.remove('blink');
+        // force reflow for restart3
+        void retry.offsetWidth;
+        retry.classList.add('blink');
+        // keep focus on input
+        pwd.focus();
+      }
+    });
+
+    // allow Enter key from the input (form handles it), Escape to clear
+    pwd.addEventListener('keydown', function(e){
+      if (e.key === 'Escape') pwd.value = '';
+    });
+
+    // optional: allow logout during testing by clearing sessionStorage in console:
+    // sessionStorage.removeItem('twinned_logged');
+  </script>
+</body>
+</html>
+
+//THIS PART HAS BEEN COMPLETED, CHECK WORK.HTML AND COMPLETE THE APPS SUCH AS NOTION, CANVA, CHATGPT ETC. ALSO, ADD A SEARCH BAR FOR EASY ACCESS.
